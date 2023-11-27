@@ -1,0 +1,15 @@
+C:\Users\morte\Desktop\Projects\blackjack\bin\Debug\net7.0\blackjack.exe
+C:\Users\morte\Desktop\Projects\blackjack\bin\Debug\net7.0\blackjack.deps.json
+C:\Users\morte\Desktop\Projects\blackjack\bin\Debug\net7.0\blackjack.runtimeconfig.json
+C:\Users\morte\Desktop\Projects\blackjack\bin\Debug\net7.0\blackjack.dll
+C:\Users\morte\Desktop\Projects\blackjack\bin\Debug\net7.0\blackjack.pdb
+C:\Users\morte\Desktop\Projects\blackjack\obj\Debug\net7.0\blackjack.csproj.AssemblyReference.cache
+C:\Users\morte\Desktop\Projects\blackjack\obj\Debug\net7.0\blackjack.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\morte\Desktop\Projects\blackjack\obj\Debug\net7.0\blackjack.AssemblyInfoInputs.cache
+C:\Users\morte\Desktop\Projects\blackjack\obj\Debug\net7.0\blackjack.AssemblyInfo.cs
+C:\Users\morte\Desktop\Projects\blackjack\obj\Debug\net7.0\blackjack.csproj.CoreCompileInputs.cache
+C:\Users\morte\Desktop\Projects\blackjack\obj\Debug\net7.0\blackjack.dll
+C:\Users\morte\Desktop\Projects\blackjack\obj\Debug\net7.0\refint\blackjack.dll
+C:\Users\morte\Desktop\Projects\blackjack\obj\Debug\net7.0\blackjack.pdb
+C:\Users\morte\Desktop\Projects\blackjack\obj\Debug\net7.0\blackjack.genruntimeconfig.cache
+C:\Users\morte\Desktop\Projects\blackjack\obj\Debug\net7.0\ref\blackjack.dll
