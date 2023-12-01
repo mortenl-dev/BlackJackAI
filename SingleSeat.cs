@@ -3,30 +3,37 @@ using System.ComponentModel.Design.Serialization;
 using System.Security.Cryptography.X509Certificates;
 
 public class BlackJackSingle {
+
+    #region INIT
     public static void Main () {
         BlackJackSingle Game = new BlackJackSingle();
         
         Game.Start();
     }
+    #endregion
+
+    #region VARIABLES
     int stack = 100;
-    int bet = 0;
     int currentSeat = 1;
     int players = 1;
     Seat Player = new Seat();
     Seat Bank = new Seat();
     Deck deck = new Deck();
     List<Seat> seats = new List<Seat>();
+
+    #endregion
     public void Start() {
         //ask for bets
+        Console.WriteLine("Please state your bet.");
+        string inputBet = Console.ReadLine()!;
 
-        //optionally implementable: ask for side bets
-
+        Player.bet = Int16.Parse(inputBet); //int16 because why would i need more
         
         seats.Add(Player);
 
         //reveal players two cards
-        Player.cards.Add(deck.DrawTest(Player, "Player"));
-        Player.cards.Add(deck.DrawTest(Player, "Player"));
+        Player.cards.Add(deck.Draw(Player, "Player"));
+        Player.cards.Add(deck.Draw(Player, "Player"));
 
         if (Player.total == 21) {
             Console.WriteLine("Blackjack!");
@@ -62,7 +69,7 @@ public class BlackJackSingle {
     }
 
     public void Hit() {
-        Player.cards.Add(deck.DrawTest(Player, "Player"));
+        Player.cards.Add(deck.Draw(Player, "Player"));
         if (Player.total > 21) {
             if (Player.ace) {
                 Player.total-=10;
@@ -88,9 +95,7 @@ public class BlackJackSingle {
         Ask(Player);
     }
     public void Ask (Seat seat) {
-        Console.WriteLine(seat.firstTurn.ToString());
         Console.WriteLine("Please choose your next option.");
-        Console.WriteLine ($"{seat.total}   {seat.cards[0].Number} ");
         string Choice = Console.ReadLine()!;
             if (seat.firstTurn) {
                 switch (Choice) {
@@ -145,6 +150,7 @@ public class BlackJackSingle {
     public void Split() {
         
         Seat split = new Seat();
+        split.bet = Player.bet;
         seats.Add(split);
         Seat prevSeat = seats[seats.Count-2];
         //give one card to the new seat
@@ -171,6 +177,8 @@ public class BlackJackSingle {
     }
 
     public void Double() {
+        Player.bet*=2;
+        Hit();
         //double bets
         //hit
     }
@@ -180,8 +188,9 @@ public class BlackJackSingle {
             Bank.cards.Add(deck.Draw(Bank, "Bank"));
             Console.WriteLine($"Banks total is now {Bank.total}.");
             if (Bank.total > 21) {
-                Console.WriteLine("Bank busted!");
                 Console.WriteLine("You win!");
+                Player.bet *= 2;
+                Console.WriteLine(Player.bet.ToString());
                 return;
             }
 
@@ -191,22 +200,24 @@ public class BlackJackSingle {
     }
 
     public void Compare() {
-        foreach (Seat s in seats) {
+        for (int i = 0; i < seats.Count; i++)
+        {   
+            Seat s = seats[i];
             if (s.total > Bank.total) {
-            Console.WriteLine("You win!");
-            //player wins
+                Console.WriteLine("You win!");
+
+                s.bet *= 2;
             }
             else if (s.total == Bank.total) {
                 Console.WriteLine("Pushing...");
             }
             else {
                 Console.WriteLine("The Bank wins!");
-            }
-        }
-        
-        Console.WriteLine($"{Player.total}");
-        Console.WriteLine($"{Bank.total}");
 
+                s.bet = 0;
+            }
+            Console.WriteLine(s.bet.ToString());
+        }
     }
 }
 
@@ -215,6 +226,7 @@ public class Seat {
     public List<Card> cards = new List<Card>();
     public bool ace = false;
     public bool firstTurn = true;
+    public int bet = 0;
 }
 
 public class Card {
