@@ -8,15 +8,15 @@ The program also allows for very easy tweaking, essentially making applicable as
 ## Documentation
 ### Running the program
 Running the standard program (Ask for user input, random cards).
-```sh
+```
 run std game
 ```
 debug mode: you can choose which cards get drawn by determining the random integer that gets used in Draw()
-```sh
+```
 run dev game
 ```
 auto mode: the game plays itself with optimal play, being able to play several games in quick succession to collect data
-```sh
+```
 run auto game
 ```
 
