@@ -8,7 +8,25 @@ public class BlackJackSingle {
     public static void Main () {
         BlackJackSingle Game = new BlackJackSingle();
         
-        Game.Start();
+        // ASK PLAYER IF STD DEV OR AUTO
+
+        string act = Console.ReadLine()!;
+        switch (act) {
+            case "run std game":
+                Game.Start("std");
+                break;
+            case "run dev game":
+                Game.Start("dev");
+                break;
+            case "run auto game":
+                Game.Start("auto");
+                int simCount = Int32.Parse(Console.ReadLine()!);
+                while(simCount > 0) {
+                    simCount--;
+                }
+                break;
+        }
+        
     }
     #endregion
 
@@ -21,81 +39,114 @@ public class BlackJackSingle {
     Deck deck = new Deck();
     List<Seat> seats = new List<Seat>();
 
+    List<int> cardNumbers = new List<int>();
+    int i = 0;
+    bool debug = false;
+    public static int pd = 0; //GETS INCREMENTED EACH NEW DRAWN CARD IN DEBUGMODE IN THE DRAWDEBUG FUNCTION
+
     #endregion
-    public void Start() {
-        //ask for bets
-        Console.WriteLine("Please state your bet.");
-        string inputBet = Console.ReadLine()!;
+    public void Start(string version) {
 
-        Player.bet = Int16.Parse(inputBet); //int16 because why would i need more
-        
-        seats.Add(Player);
+        switch (version) {
+            case "std":
+                //ask for bets
+                string inputBet = Console.ReadLine()!;
 
-        //reveal players two cards
-        Player.cards.Add(deck.Draw(Player, "Player"));
-        Player.cards.Add(deck.Draw(Player, "Player"));
+                Player.bet = Int16.Parse(inputBet); //int16 because why would i need more
+                stack-=Player.bet;
+                
+                seats.Add(Player);
 
-        if (Player.total == 21) {
-            Console.WriteLine("Blackjack!");
+                //reveal players two cards
+                Player.cards.Add(deck.Draw(Player, "Player"));
+                Player.cards.Add(deck.Draw(Player, "Player"));
+
+                //reveal bank 1 card
+                Bank.cards.Add(deck.Draw(Bank, "Bank"));
+                //ask player options
+                Ask(Player); 
+                break;
+            case "dev":
+                //ask for bets
+                debug = true;
+                Player.bet = Int16.Parse(Console.ReadLine()!); //int16 because why would i need more
+                stack-=Player.bet;
+                
+                seats.Add(Player);
+                Console.WriteLine("Please state the numbers to be drawn for the player in-order.");
+                Console.WriteLine("To continue, please enter \"continue\"");
+
+                int counter = 0;
+                
+                
+                string cont = "";
+                while (true) {
+                    cont = Console.ReadLine()!;
+                    if (cont == "continue") {
+                        break;
+                    }
+                    cardNumbers.Add(Int32.Parse(cont));
+                    counter++;
+                }
+
+                //reveal players two cards
+                Player.cards.Add(deck.DrawDebug(Player, "Player",cardNumbers[i]));
+                Player.cards.Add(deck.DrawDebug(Player, "Player",cardNumbers[i]));
+                //reveal bank 1 card
+                Bank.cards.Add(deck.DrawDebug(Bank, "Bank",cardNumbers[i]));
+                //ask player options
+                Ask(Player); 
+
+                break;
+            case "auto":
+
+                break;
         }
-        //Console.WriteLine($"{}");
-
-        Console.WriteLine($"Your total is now {Player.total}.");
-
-        //reveal bank 1 card
-        Bank.cards.Add(deck.Draw(Bank, "Bank"));
-        //ask player options
-        Ask(Player);
-        
-        //hit
-        //draw new card
-        //show new card
-        //if bust: end game
-        //else: ask options again but not double
-
-        //stand
-        //start with banks turns
-        
-        //double
-        //double bets, otherwise its just a hit
-
-        //split
-        //most complicated, ig just create new seat instance  --> do this last
-
-        //finally: compare totals of Player and Bank seats
-        //win or loss
-        //start again
+              
         
     }
 
     public void Hit() {
-        Player.cards.Add(deck.Draw(Player, "Player"));
+        if (debug) {
+            Player.cards.Add(deck.DrawDebug(Player, "Player",cardNumbers[i]));
+            CheckFor21AndAsk();
+        }
+        else {
+            Player.cards.Add(deck.Draw(Player, "Player"));
+            CheckFor21AndAsk();
+        }
+        
+        
+        
+    }
+
+    public void CheckFor21AndAsk() {
         if (Player.total > 21) {
             if (Player.ace) {
                 Player.total-=10;
             }
             else {
-                Console.WriteLine($"Your total is now {Player.total}.");
-                Console.WriteLine("You busted!");
+
                 if (currentSeat != players) {
                     MoveOnToNextPlayer();
                 }
+
+                //TIMER
+
+                Thread.Sleep(5000);
                 return;
             }
         }
-        Console.WriteLine($"Your total is now {Player.total}.");
         Ask(Player);
-        
     }
 
     public void MoveOnToNextPlayer () {
         currentSeat++;
         Player = seats[currentSeat-1];
-        Player.cards.Add(deck.DrawTest(Player, "Player"));
+        Player.cards.Add(deck.Draw(Player, "Player"));
         Ask(Player);
     }
     public void Ask (Seat seat) {
-        Console.WriteLine("Please choose your next option.");
         string Choice = Console.ReadLine()!;
             if (seat.firstTurn) {
                 switch (Choice) {
@@ -118,7 +169,6 @@ public class BlackJackSingle {
                     Double();
                     break;
                 default:
-                    Console.WriteLine("Please try again.");
                     break;
                 }
                 
@@ -132,7 +182,6 @@ public class BlackJackSingle {
                     Stand();
                     break;
                 default:
-                    Console.WriteLine("Please try again.");
                     break;
                 }
             }
@@ -151,6 +200,7 @@ public class BlackJackSingle {
         
         Seat split = new Seat();
         split.bet = Player.bet;
+        stack-=split.bet;
         seats.Add(split);
         Seat prevSeat = seats[seats.Count-2];
         //give one card to the new seat
@@ -158,18 +208,14 @@ public class BlackJackSingle {
         //remove the card from the previous seat
         prevSeat.cards.RemoveAt(0);
         //subtract it from total
-        if (prevSeat.cards[0].Number > 10) {
-            prevSeat.total -= 10;
-            split.total+=10;
-        }
-        else if (prevSeat.cards[0].Number == 1) {
+        if (prevSeat.cards[0].Number == 1) {
             prevSeat.total -= 1;
             split.total+=11;
             split.ace = true;
         }
         else {
-            prevSeat.total -= prevSeat.cards[0].Number;
-            split.total+=prevSeat.cards[0].Number;
+            prevSeat.total-=prevSeat.cards[0].Value;
+            split.total+=prevSeat.cards[0].Value;
         }
         
         players++;
@@ -184,14 +230,71 @@ public class BlackJackSingle {
     }
 
     public void BanksTurn() {
+        if (players > 1) {
+            if (debug) {
+               while (Bank.total < 17) {
+                int winCount = 0;
+                Bank.cards.Add(deck.DrawDebug(Bank, "Bank",cardNumbers[i]));
+                foreach (Seat s in seats) {
+                    if (Bank.total > s.total) {
+                        winCount++;
+                    }
+                }
+                if (winCount == players) {
+                    Compare();
+                    break;
+                }
+                if (Bank.total > 21) {
+                    Player.bet *= 2;
+        
+                    //TIMER
+
+                    Thread.Sleep(5000);
+
+                    return;
+                }
+
+            } 
+            }
+            else {
+                while (Bank.total < 17) {
+                int winCount = 0;
+                Bank.cards.Add(deck.Draw(Bank, "Bank"));
+                foreach (Seat s in seats) {
+                    if (Bank.total > s.total) {
+                        winCount++;
+                    }
+                }
+                if (winCount == players) {
+                    Compare();
+                    break;
+                }
+                if (Bank.total > 21) {
+                    Player.bet *= 2;
+        
+                    //TIMER
+
+                    Thread.Sleep(5000);
+
+                    return;
+                }
+
+            }
+            }
+            
+        }
+        else {
+
+        }
         while (Bank.total < 17) {
             Bank.cards.Add(deck.Draw(Bank, "Bank"));
-            Console.WriteLine($"Banks total is now {Bank.total}.");
             if (Bank.total > 21) {
-                Console.WriteLine("You win!");
                 Player.bet *= 2;
-                Console.WriteLine(Player.bet.ToString());
                 return;
+            }
+            if (Bank.total > Player.total) {
+                Compare();
+                break;
             }
 
         }
@@ -204,127 +307,21 @@ public class BlackJackSingle {
         {   
             Seat s = seats[i];
             if (s.total > Bank.total) {
-                Console.WriteLine("You win!");
 
                 s.bet *= 2;
             }
             else if (s.total == Bank.total) {
-                Console.WriteLine("Pushing...");
             }
             else {
-                Console.WriteLine("The Bank wins!");
 
                 s.bet = 0;
             }
             Console.WriteLine(s.bet.ToString());
         }
+        
+        //TIMER
+
+        Thread.Sleep(5000);
     }
-}
-
-public class Seat {
-    public int total = 0;
-    public List<Card> cards = new List<Card>();
-    public bool ace = false;
-    public bool firstTurn = true;
-    public int bet = 0;
-}
-
-public class Card {
-    public string? Family;
-    public int Number;
-}
-
-public class Deck {
-        public static List<int> Numbers = new List<int>(){1,2,3,4,5,6,7,8,9,10,11,12,13};
-        public static Random rmd = new Random();
-        public Dictionary<string, List<int>> Cards = new Dictionary<string, List<int>>(){
-            {"Clubs", Numbers},
-            {"Diamonds", Numbers},
-            {"Hearts", Numbers},
-            {"Spades", Numbers},
-            };
-        public Card Draw (Seat seat, string Drawer) {
-            
-            Card c = new Card();
-            int i = rmd.Next(0,4);
-            int n = rmd.Next(0,13);
-
-            c.Family = Cards.ElementAt(i).Key;
-            c.Number = Numbers[n];
-
-            switch (c.Number) {
-            case 1: 
-                if (seat.total < 12 && !seat.ace) {
-                    seat.total+=11;
-                    seat.ace = true;
-                }
-                else {
-                    seat.total+=c.Number;
-                }
-                Console.WriteLine($"{Drawer} drew the Ace of {c.Family}.");
-                break;
-            case 13:
-                Console.WriteLine($"{Drawer} drew the King of {c.Family}.");
-                seat.total+=10;
-                break;
-            case 12:
-                Console.WriteLine($"{Drawer} drew the Queen of {c.Family}.");
-                seat.total+=10;
-                break;
-            case 11:
-                Console.WriteLine($"{Drawer} drew the Jack of {c.Family}.");
-                seat.total+=10;
-                break;
-            default:
-                Console.WriteLine($"{Drawer} drew the {c.Number} of {c.Family}.");
-                seat.total+=c.Number;
-                break;
-            }
-            
-            
-            return c;
-        }
-
-        public Card DrawTest (Seat seat, string Drawer) {
-            
-            Card c = new Card();
-            int i = rmd.Next(0,4);
-            int n = 0;
-
-            c.Family = Cards.ElementAt(i).Key;
-            c.Number = Numbers[n];
-
-            switch (c.Number) {
-            case 1: 
-                if (seat.total < 12 && !seat.ace) {
-                    seat.total+=11;
-                    seat.ace = true;
-                }
-                else {
-                    seat.total+=c.Number;
-                }
-                Console.WriteLine($"{Drawer} drew the Ace of {c.Family}.");
-                break;
-            case 13:
-                Console.WriteLine($"{Drawer} drew the King of {c.Family}.");
-                seat.total+=10;
-                break;
-            case 12:
-                Console.WriteLine($"{Drawer} drew the Queen of {c.Family}.");
-                seat.total+=10;
-                break;
-            case 11:
-                Console.WriteLine($"{Drawer} drew the Jack of {c.Family}.");
-                seat.total+=10;
-                break;
-            default:
-                Console.WriteLine($"{Drawer} drew the {c.Number} of {c.Family}.");
-                seat.total+=c.Number;
-                break;
-            }
-            
-            
-            return c;
-        }
 }
 
